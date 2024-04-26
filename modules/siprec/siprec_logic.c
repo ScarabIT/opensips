@@ -621,12 +621,18 @@ static void tm_update_recording(struct cell *t, int type, struct tmcb_params *ps
 
 void tm_start_recording(struct cell *t, int type, struct tmcb_params *ps)
 {
+	str *body;
 	struct src_sess *ss;
 
 	if (!is_invite(t))
 		return;
 	ss = (struct src_sess *)*ps->param;
 	if (ps->code >= 300)
+		return;
+
+	/* check if we have a reply with body */
+	body = get_body_part(ps->rpl, TYPE_APPLICATION, SUBTYPE_SDP);
+	if (!body || body->len == 0)
 		return;
 
 	SIPREC_LOCK(ss);
